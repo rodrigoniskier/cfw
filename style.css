@@ -1,0 +1,218 @@
+/* --- Reset Básico e Configuração Global --- */
+:root {
+    --cor-fundo: #FDFCF5; /* Um creme muito claro, quase branco (tipo pergaminho) */
+    --cor-texto: #2C2C2C; /* Um preto suave, mais fácil de ler */
+    --cor-cabecalho: #4A4A4A;
+    --cor-acento: #8C1515; /* Um vermelho/marrom escuro (Bordô/Académico) */
+    --cor-borda: #DDC;
+    --cor-fundo-box: #FFFFFF;
+    --sombra-box: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    --fonte-corpo: Georgia, 'Source Serif Pro', serif;
+    --fonte-cabecalho: 'Merriweather', Georgia, serif;
+    --fonte-utilitaria: Verdana, 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fonte-corpo);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    line-height: 1.7;
+    padding: 10px;
+}
+
+main {
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: var(--cor-fundo-box);
+    border: 1px solid var(--cor-borda);
+    box-shadow: var(--sombra-box);
+    border-radius: 8px;
+    overflow: hidden; /* Para conter os cantos arredondados */
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--fonte-cabecalho);
+    color: var(--cor-cabecalho);
+    line-height: 1.3;
+}
+
+h1 { font-size: 2.2rem; }
+h2 { font-size: 1.8rem; margin-bottom: 15px; }
+h3 { font-size: 1.5rem; color: var(--cor-acento); margin-bottom: 10px; }
+h4 { font-size: 1.2rem; margin-top: 20px; }
+
+p { margin-bottom: 15px; }
+hr {
+    border: 0;
+    height: 1px;
+    background: var(--cor-borda);
+    margin: 30px 0;
+}
+
+/* --- Cabeçalho e Rodapé --- */
+header, footer {
+    text-align: center;
+    padding: 25px;
+}
+
+header {
+    border-bottom: 2px solid var(--cor-acento);
+    background-color: #fff;
+}
+
+footer {
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 20px;
+}
+
+/* --- Seção de Configuração --- */
+.configuracao {
+    padding: 25px;
+    background-color: #f9f9f9;
+}
+
+.controles-data {
+    display: flex;
+    flex-direction: column; /* Padrão mobile: empilhado */
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.input-grupo {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-grupo label {
+    font-family: var(--fonte-utilitaria);
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.input-grupo input[type="date"] {
+    font-family: var(--fonte-utilitaria);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+button#load-devotional-btn {
+    font-family: var(--fonte-utilitaria);
+    font-weight: bold;
+    font-size: 1rem;
+    color: #FFFFFF;
+    background-color: var(--cor-acento);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%; /* Mobile */
+}
+
+button#load-devotional-btn:hover {
+    background-color: #6a1010; /* Tom mais escuro do acento */
+}
+
+.info-plano {
+    font-family: var(--fonte-utilitaria);
+    font-size: 0.9rem;
+    color: #333;
+    margin-top: 15px;
+}
+
+.erro {
+    font-family: var(--fonte-utilitaria);
+    font-weight: bold;
+    color: #D8000C; /* Vermelho de erro */
+    margin-top: 15px;
+}
+
+/* --- Área Devocional (Conteúdo) --- */
+.devocional-container {
+    padding: 25px;
+}
+
+.devocional-item {
+    margin-bottom: 30px;
+    border-bottom: 1px dashed var(--cor-borda);
+    padding-bottom: 20px;
+}
+
+.devocional-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* O texto da WCF */
+.wcf-texto {
+    font-style: italic;
+    font-size: 1.1rem;
+    color: #444;
+    padding-left: 20px;
+    border-left: 3px solid var(--cor-borda);
+}
+
+/* As referências bíblicas */
+.referencias {
+    font-family: var(--fonte-utilitaria);
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 15px;
+    word-wrap: break-word; /* Garante que as referências longas quebrem a linha */
+}
+
+/* O comentário devocional */
+.comentario {
+    font-size: 1.05rem;
+    text-align: justify;
+    margin-top: 15px;
+}
+
+#loading-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+
+/* --- Design Responsivo (Tablet e PC) --- */
+
+/* Tablet (e inputs lado a lado) */
+@media (min-width: 600px) {
+    .controles-data {
+        flex-direction: row; /* Lado a lado */
+        justify-content: space-between;
+    }
+
+    .input-grupo {
+        flex: 1; /* Ocupa espaço igual */
+    }
+
+    button#load-devotional-btn {
+        width: auto; /* Largura automática (não 100%) */
+        min-width: 200px;
+    }
+}
+
+/* PC (Ajusta o padding principal) */
+@media (min-width: 768px) {
+    body {
+        padding: 20px;
+    }
+    
+    .configuracao, .devocional-container {
+        padding: 40px;
+    }
+}
