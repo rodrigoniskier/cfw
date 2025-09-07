@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorEl = document.getElementById('error-message');
 
     let wcfData = []; // Onde os nossos 175 parágrafos do JSON irão viver.
-    const TOTAL_PARAGRAPHS = 175;
+    const TOTAL_PARAGRAPHS = 171;
 
     // --- 2. Carregamento Assíncrono dos Dados ---
     async function loadDatabase() {
