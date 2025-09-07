@@ -216,3 +216,98 @@ button#load-devotional-btn:hover {
         padding: 40px;
     }
 }
+/* --- ESTILOS ADICIONAIS PARA A PÁGINA DE IMPRESSÃO (NOVA ABA) --- */
+
+/* Estilos para a nova aba (visualização no navegador) */
+body.plano-impressao {
+    background-color: #FFFFFF; /* Fundo branco limpo para a impressão */
+    padding: 15px;
+}
+
+.plano-impressao main {
+    max-width: 1000px;
+    margin: 10px auto;
+    border: none;
+    box-shadow: none;
+}
+
+.plano-impressao .titulo-plano {
+    text-align: center;
+    border-bottom: 2px solid var(--cor-acento);
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+}
+
+.dia-plano {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: var(--cor-fundo); /* Fundo creme suave para cada dia */
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
+}
+
+.dia-plano h2 {
+    font-size: 1.6rem;
+    color: var(--cor-acento);
+    border-bottom: 1px solid var(--cor-borda);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* --- REGRAS DE IMPRESSÃO (@media print) --- */
+
+@media print {
+    /* Esconde elementos desnecessários na impressão (como o UI de configuração) */
+    body:not(.plano-impressao) header,
+    body:not(.plano-impressao) .configuracao,
+    body:not(.plano-impressao) footer,
+    body:not(.plano-impressao) hr {
+        display: none;
+    }
+
+    /* Regras específicas para a página de impressão (a nova aba) */
+    body.plano-impressao {
+        font-family: Georgia, 'Times New Roman', Times, serif; /* Fontes serifadas são melhores para impressão */
+        color: #000000;
+        background-color: #FFFFFF;
+    }
+
+    main {
+        all: unset; /* Remove todas as restrições de layout da 'main' na impressão */
+        width: 100%;
+        max-width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+    
+    .dia-plano {
+        page-break-inside: avoid; /* Tenta não quebrar um bloco de dia no meio da página */
+        page-break-after: auto;
+        background-color: #FFFFFF !important; /* Força fundo branco */
+        border: none;
+        box-shadow: none;
+        padding: 10px 0;
+    }
+
+    .devocional-item {
+        page-break-inside: avoid; /* Tenta manter cada devocional unido */
+    }
+
+    h2, h3, h4 {
+        color: #000 !important;
+    }
+
+    .referencias {
+        font-size: 0.8rem;
+        color: #333 !important;
+    }
+    
+    .wcf-texto {
+        font-size: 1rem;
+        border-left: 2px solid #EEE;
+    }
+
+    .comentario {
+        font-size: 1rem;
+    }
+}
