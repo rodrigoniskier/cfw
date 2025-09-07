@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const planInfoEl = document.getElementById('plan-info');
     const errorEl = document.getElementById('error-message');
 
-    let wcfData = []; // Onde os nossos 175 parágrafos do JSON irão viver.
+    let wcfData = []; // Onde os nossos 171 parágrafos do JSON irão viver.
     const TOTAL_PARAGRAPHS = 171;
 
     // --- 2. Carregamento Assíncrono dos Dados ---
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  throw new Error(`Dados carregados incompletos. Esperados: ${TOTAL_PARAGRAPHS}. Recebidos: ${wcfData.length}`);
             }
 
-            loadingMessage.textContent = "Base de dados (175 parágrafos) carregada. Pronto para gerar o plano.";
+            loadingMessage.textContent = "Base de dados (171 parágrafos) carregada. Pronto para gerar o plano.";
             generateButton.disabled = false; // Habilita o botão após os dados carregarem
 
         } catch (error) {
