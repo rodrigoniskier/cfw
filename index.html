@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devocional da Confissão de Fé de Westminster</title>
+    <title>Gerador de Plano Devocional - WCF</title>
     <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
 
     <header>
-        <h1>Devocional Diário</h1>
+        <h1>Gerador de Plano Devocional</h1>
         <h2>Confissão de Fé de Westminster</h2>
     </header>
 
     <main>
         <section class="configuracao">
-            <h2>Configurar o Plano de Leitura</h2>
-            <p>Selecione o seu período de leitura desejado para os 175 parágrafos da Confissão e seus comentários.</p>
+            <h2>Configurar Plano de Leitura</h2>
+            <p>Selecione um período de início e fim. A aplicação distribuirá todos os 175 parágrafos e comentários devocionais uniformemente por esses dias e gerará um plano completo para impressão numa nova aba.</p>
             
             <div class="controles-data">
                 <div class="input-grupo">
@@ -29,18 +29,17 @@
                 </div>
             </div>
             
-            <button id="load-devotional-btn">Carregar Devoção do Dia</button>
+            <button id="generate-plan-btn">Gerar Plano para Impressão</button>
             <p id="plan-info" class="info-plano"></p>
             <p id="error-message" class="erro"></p>
         </section>
 
-        <hr>
-
-        <section id="area-devocional" class="devocional-container" aria-live="polite">
+        <section id="status-area" class="devocional-container" aria-live="polite">
             <div id="loading-message">
-                <p>Aguardando a configuração do plano...</p>
+                <p>A base de dados (175 parágrafos) está a carregar... Por favor, aguarde.</p>
             </div>
         </section>
+
     </main>
 
     <footer>
