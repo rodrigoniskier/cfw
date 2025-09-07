@@ -1,24 +1,23 @@
 /*
- * ARQUIVO 3: app.js
- * O motor lógico para o Devocional da WCF.
+ * ARQUIVO 3 (REVISADO): app.js
+ * O motor lógico para o GERADOR DE PLANO DEVOCIONAL da WCF.
  */
 
-// Espera que o HTML esteja totalmente carregado antes de executar qualquer script.
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. Seleção dos Elementos do DOM ---
     const startDateInput = document.getElementById('start-date');
     const endDateInput = document.getElementById('end-date');
-    const loadButton = document.getElementById('load-devotional-btn');
-    const devotionalContainer = document.getElementById('area-devocional');
+    const generateButton = document.getElementById('generate-plan-btn'); // Botão foi renomeado no HTML
+    const statusContainer = document.getElementById('status-area');
+    const loadingMessage = document.getElementById('loading-message');
     const planInfoEl = document.getElementById('plan-info');
     const errorEl = document.getElementById('error-message');
 
     let wcfData = []; // Onde os nossos 175 parágrafos do JSON irão viver.
-    const TOTAL_PARAGRAPHS = 175; // O número total de parágrafos na WCF (Cap 1-33).
+    const TOTAL_PARAGRAPHS = 175;
 
     // --- 2. Carregamento Assíncrono dos Dados ---
-    // Como estamos num servidor web, usamos fetch() para carregar o JSON.
     async function loadDatabase() {
         try {
             const response = await fetch('dados.json');
@@ -27,26 +26,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             wcfData = await response.json();
             
-            // Verificação de integridade (deve corresponder ao nosso total planeado)
             if (!wcfData || wcfData.length !== TOTAL_PARAGRAPHS) {
-                 throw new Error(`Os dados carregados estão incompletos ou corrompidos. Esperados: ${TOTAL_PARAGRAPHS}. Recebidos: ${wcfData.length}`);
+                 throw new Error(`Dados carregados incompletos. Esperados: ${TOTAL_PARAGRAPHS}. Recebidos: ${wcfData.length}`);
             }
 
-            // Após carregar os dados, tentamos carregar qualquer plano guardado
-            loadSavedPlan();
+            loadingMessage.textContent = "Base de dados (175 parágrafos) carregada. Pronto para gerar o plano.";
+            generateButton.disabled = false; // Habilita o botão após os dados carregarem
 
         } catch (error) {
             console.error("Falha ao carregar a base de dados devocional:", error);
-            displayError("ERRO CRÍTICO: Não foi possível carregar o arquivo 'dados.json'. Verifique se o arquivo está no mesmo diretório.");
+            displayError("ERRO CRÍTICO: Não foi possível carregar 'dados.json'. Verifique se o arquivo está no servidor e no diretório correto.");
+            loadingMessage.textContent = "Falha ao carregar dados.";
         }
     }
 
-    // --- 3. Lógica do Agendador Flexível ---
+    // --- 3. NOVA LÓGICA: Gerador de Plano Completo ---
 
-    function handleLoadDevotionalClick() {
+    function handleGeneratePlanClick() {
         clearMessages();
 
-        // 3.1. Validação das Datas
+        // 3.1. Validação
         const startDateValue = startDateInput.value;
         const endDateValue = endDateInput.value;
 
@@ -57,112 +56,107 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const startDate = normalizeDate(new Date(startDateValue));
         const endDate = normalizeDate(new Date(endDateValue));
-        const today = normalizeDate(new Date());
-
 
         if (endDate < startDate) {
             displayError("A Data de Fim deve ser posterior à Data de Início.");
             return;
         }
 
-        // 3.2. Guardar o plano no LocalStorage para conveniência
-        localStorage.setItem('wcf_devotional_start', startDateValue);
-        localStorage.setItem('wcf_devotional_end', endDateValue);
-
-        // 3.3. Executar o cálculo
-        calculateAndDisplaySchedule(startDate, endDate, today);
-    }
-
-    function calculateAndDisplaySchedule(startDate, endDate, today) {
-        
-        // 3.4. Verificar se o plano está ativo hoje
-        if (today < startDate) {
-            planInfoEl.textContent = "O seu plano de leitura começa em " + startDate.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
-            devotionalContainer.innerHTML = "<p>Nenhuma leitura agendada para hoje.</p>";
-            return;
-        }
-        if (today > endDate) {
-            planInfoEl.textContent = "O seu plano de leitura selecionado terminou em " + endDate.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
-            devotionalContainer.innerHTML = "<p>Plano concluído! Pode começar um novo plano selecionando novas datas.</p>";
-            return;
-        }
-
-        // 3.5. Calcular a Duração e o Ritmo
+        // 3.2. Calcular Duração e Ritmo
         const msPerDay = 1000 * 60 * 60 * 24;
         const totalDurationDays = Math.round((endDate.getTime() - startDate.getTime()) / msPerDay) + 1; // +1 para incluir o último dia
-        const currentDayOfPlan = Math.round((today.getTime() - startDate.getTime()) / msPerDay) + 1;
-
         const itemsPerDayRatio = TOTAL_PARAGRAPHS / totalDurationDays;
 
-        // 3.6. Calcular o "bloco" de parágrafos para hoje
-        // Arredondamos para garantir que todos os 175 itens sejam cobertos até ao final.
-        const endIndex = Math.round(currentDayOfPlan * itemsPerDayRatio);
-        const startIndex = Math.round((currentDayOfPlan - 1) * itemsPerDayRatio);
+        planInfoEl.textContent = `A gerar plano de ${totalDurationDays} dias (${itemsPerDayRatio.toFixed(2)} leituras/dia)...`;
 
-        const itemsToShow = wcfData.slice(startIndex, endIndex);
+        // 3.3. Gerar o HTML para a nova aba
+        let printHtml = generatePrintableHtml(startDate, totalDurationDays, itemsPerDayRatio);
 
-        // 3.7. Atualizar UI
-        const readingsCount = itemsToShow.length;
-        planInfoEl.textContent = `Plano Ativo: Dia ${currentDayOfPlan} de ${totalDurationDays}. Exibindo ${readingsCount} ${readingsCount === 1 ? 'leitura' : 'leituras'} hoje.`;
-
-        // 3.8. Renderizar o conteúdo
-        renderDevotionals(itemsToShow);
+        // 3.4. Abrir a nova aba e escrever o conteúdo
+        try {
+            const newTab = window.open();
+            newTab.document.open();
+            newTab.document.write(printHtml);
+            newTab.document.close();
+        } catch (e) {
+            displayError("Falha ao abrir a nova aba. Por favor, desative o bloqueador de pop-ups para este site.");
+            console.error("Erro ao abrir pop-up:", e);
+        }
     }
 
+    // 3.5. Função de Geração de HTML (Loop principal)
+    function generatePrintableHtml(startDate, totalDurationDays, ratio) {
+        let html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Plano Devocional da WCF (${totalDurationDays} dias)</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body class="plano-impressao">
+    <main>
+        <div class="titulo-plano">
+            <h1>Plano Devocional da Confissão de Fé de Westminster</h1>
+            <h2>Período de ${startDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' })} a ${new Date(startDate.getTime() + (totalDurationDays - 1) * 1000 * 60 * 60 * 24).toLocaleDateString('pt-BR', { timeZone: 'UTC' })} (${totalDurationDays} dias)</h2>
+        </div>
+        `;
 
-    // --- 4. Função de Renderização ---
-    // Recebe um array de objetos de parágrafos e converte-os em HTML.
-    function renderDevotionals(itemsArray) {
-        if (itemsArray.length === 0) {
-            // Isto pode acontecer se o plano for muito longo (ex: 365 dias), criando dias de descanso.
-            devotionalContainer.innerHTML = "<h3>Descanso Agendado</h3><p>Não há leituras específicas agendadas para hoje neste plano. Aproveite para meditar no que já leu.</p>";
-            return;
-        }
+        const msPerDay = 1000 * 60 * 60 * 24;
 
-        let htmlString = "";
+        // Itera por CADA DIA do plano
+        for (let day = 1; day <= totalDurationDays; day++) {
+            
+            const currentPlanDate = new Date(startDate.getTime() + ((day - 1) * msPerDay));
+            
+            // Calcula o bloco de parágrafos para este dia
+            const endIndex = Math.round(day * ratio);
+            const startIndex = Math.round((day - 1) * ratio);
+            const itemsToShow = wcfData.slice(startIndex, endIndex);
 
-        itemsArray.forEach(item => {
-            htmlString += `
-                <article class="devocional-item">
-                    <h3>${item.capitulo_titulo} (Cap. ${item.capitulo_num}, Par. ${item.paragrafo_num})</h3>
-                    
-                    <h4>Texto da Confissão:</h4>
-                    <blockquote class="wcf-texto">
-                        ${item.texto_wcf}
-                    </blockquote>
-                    <p class="referencias"><strong>Referências:</strong> ${item.referencias_biblicas}</p>
-
-                    <h4>Comentário Devocional:</h4>
-                    <div class="comentario">
-                        ${item.comentario_devocional}
-                    </div>
-                </article>
+            // Adiciona o cabeçalho do Dia
+            html += `
+                <section class="dia-plano">
+                    <h2>Dia ${day} <span class="data-plano">(${currentPlanDate.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })})</span></h2>
             `;
-        });
 
-        devotionalContainer.innerHTML = htmlString;
-    }
+            if (itemsToShow.length === 0) {
+                html += "<p><i>Dia de descanso ou recuperação (sem novas leituras agendadas).</i></p>";
+            } else {
+                // Adiciona cada item devocional para aquele dia
+                itemsToShow.forEach(item => {
+                    html += `
+                        <article class="devocional-item">
+                            <h3>${item.capitulo_titulo} (Cap. ${item.capitulo_num}, Par. ${item.paragrafo_num})</h3>
+                            <blockquote class="wcf-texto">${item.texto_wcf}</blockquote>
+                            <p class="referencias"><strong>Referências:</strong> ${item.referencias_biblicas}</p>
+                            <h4>Comentário Devocional:</h4>
+                            <div class="comentario">${item.comentario_devocional}</div>
+                        </article>
+                    `;
+                });
+            }
 
-
-    // --- 5. Funções Utilitárias ---
-    
-    // Tenta carregar um plano guardado quando a página abre
-    function loadSavedPlan() {
-        const savedStart = localStorage.getItem('wcf_devotional_start');
-        const savedEnd = localStorage.getItem('wcf_devotional_end');
-
-        if (savedStart && savedEnd) {
-            startDateInput.value = savedStart;
-            endDateInput.value = savedEnd;
-            // Carrega automaticamente a devoção do dia se um plano válido estiver guardado
-            handleLoadDevotionalClick();
+            html += `</section>`; // Fim do .dia-plano
         }
+
+        html += `
+    </main>
+</body>
+</html>`;
+
+        return html;
     }
 
-    // Normaliza datas para meia-noite (UTC) para evitar erros de fuso horário nos cálculos
+
+    // --- 4. Funções Utilitárias ---
+    
+    // Normaliza datas para evitar erros de fuso horário
     function normalizeDate(dateObj) {
-        // Pega a data local e "força" o JS a tratá-la como UTC para cálculos de diferença.
-        return new Date(Date.UTC(dateObj.getUTCFullYear(), dateObj.getUTCMonth(), dateObj.getUTCDate()));
+         // O input 'date' retorna uma string (ex: 2025-09-08) que o construtor Date() interpreta como UTC 00:00. 
+         // Devemos usar UTC para todos os cálculos para evitar erros de "off-by-one-day".
+        const [year, month, day] = dateObj.toISOString().split('T')[0].split('-').map(Number);
+        return new Date(Date.UTC(year, month - 1, day));
     }
 
     function displayError(message) {
@@ -174,8 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
         planInfoEl.textContent = "";
     }
 
-    // --- 6. Inicialização ---
-    loadButton.addEventListener('click', handleLoadDevotionalClick);
-    loadDatabase(); // Começa a carregar o JSON assim que o script é executado.
+    // --- 5. Inicialização ---
+    generateButton.addEventListener('click', handleGeneratePlanClick);
+    generateButton.disabled = true; // Desabilitado até o JSON carregar
+    loadDatabase(); // Começa a carregar o JSON.
 
 });
